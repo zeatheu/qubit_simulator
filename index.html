@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Qubit Simulator</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <div id="container">
+        <div id="header">
+            <h1>Interactive Qubit Simulator</h1>
+            <div class="subtitle">Drag to rotate • Apply quantum gates to see state evolution</div>
+        </div>
+        
+        <div id="main">
+            <div id="canvas-container"></div>
+            
+            <div id="sidebar">
+                <div class="section">
+                    <h2>Current State</h2>
+                    <div class="state-equation" id="state-equation">|ψ⟩ = (1.000)|0⟩ + (0)|1⟩</div>
+                    <div class="last-gate" id="last-gate" style="display: none;">
+                        Last gate applied: <span class="last-gate-name" id="last-gate-name"></span>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>Quantum Gates</h2>
+                    <div class="gate-grid">
+                        <button onclick="applyGate('X')">X</button>
+                        <button onclick="applyGate('Y')">Y</button>
+                        <button onclick="applyGate('Z')">Z</button>
+                        <button onclick="applyGate('H')">H</button>
+                        <button onclick="applyGate('S')">S</button>
+                        <button onclick="applyGate('T')">T</button>
+                    </div>
+                    <button id="reset-btn" onclick="resetState()">Reset to |0⟩</button>
+                </div>
+                
+                <div class="section">
+                    <h2>Measurement Probabilities</h2>
+                    <div class="prob-item">
+                        <div class="prob-header">
+                            <span>|0⟩</span>
+                            <span id="prob-0">100.0%</span>
+                        </div>
+                        <div class="prob-bar-bg">
+                            <div class="prob-bar prob-bar-0" id="bar-0" style="width: 100%">↑</div>
+                        </div>
+                    </div>
+                    
+                    <div class="prob-item">
+                        <div class="prob-header">
+                            <span>|1⟩</span>
+                            <span id="prob-1">0.0%</span>
+                        </div>
+                        <div class="prob-bar-bg">
+                            <div class="prob-bar prob-bar-1" id="bar-1" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>Gate Reference</h2>
+                    <div class="gate-ref">
+                        <div><span class="gate-name">X</span> - Pauli X (NOT gate)</div>
+                        <div><span class="gate-name">Y</span> - Pauli Y gate</div>
+                        <div><span class="gate-name">Z</span> - Pauli Z (phase flip)</div>
+                        <div><span class="gate-name">H</span> - Hadamard (superposition)</div>
+                        <div><span class="gate-name">S</span> - Phase gate (π/2)</div>
+                        <div><span class="gate-name">T</span> - T gate (π/4)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
