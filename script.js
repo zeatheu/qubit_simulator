@@ -343,3 +343,148 @@ window.addEventListener('load', () => {
     init();
     updateUI();
 });
+
+// Switch between input modes
+function switchInputMode(mode) {
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    
+    if (mode === 'complex') {
+        tabs[0].classList.add('active');
+        document.getElementById('complex-input').style.display = 'block';
+        document.getElementById('vector-input').style.display = 'none';
+    } else {
+        tabs[1].classList.add('active');
+        document.getElementById('complex-input').style.display = 'none';
+        document.getElementById('vector-input').style.display = 'block';
+    }
+}
+
+// Set custom state
+function setCustomState() {
+    if (isAnimating) return;
+    
+    let alpha, beta;
+    
+    // Check which input mode is active
+    if (document.getElementById('complex-input').style.display !== 'none') {
+        // Complex mode
+        alpha = {
+            re: parseFloat(document.getElementById('alpha-re').value) || 0,
+            im: parseFloat(document.getElementById('alpha-im').value) || 0
+        };
+        beta = {
+            re: parseFloat(document.getElementById('beta-re').value) || 0,
+            im: parseFloat(document.getElementById('beta-im').value) || 0
+        };
+    } else {
+        // Vector mode
+        alpha = {
+            re: parseFloat(document.getElementById('v0-re').value) || 0,
+            im: parseFloat(document.getElementById('v0-im').value) || 0
+        };
+        beta = {
+            re: parseFloat(document.getElementById('v1-re').value) || 0,
+            im: parseFloat(document.getElementById('v1-im').value) || 0
+        };
+    }
+    
+    // Normalize the state
+    const norm = Math.sqrt(
+        alpha.re ** 2 + alpha.im ** 2 +
+        beta.re ** 2 + beta.im ** 2
+    );
+    
+    if (norm === 0) {
+        alert('Invalid state: cannot be zero vector');
+        return;
+    }
+    
+    alpha.re /= norm;
+    alpha.im /= norm;
+    beta.re /= norm;
+    beta.im /= norm;
+    
+    const newState = [alpha, beta];
+    
+    document.getElementById('last-gate').style.display = 'block';
+    document.getElementById('last-gate-name').textContent = 'Custom State';
+    
+    animateGateApplication(newState);
+}
+
+// Generate random qubit
+function generateRandomQubit() {
+    if (isAnimating) return;
+    
+    // Generate random angles for Bloch sphere
+    const theta = Math.random() * Math.PI;
+    const phi = Math.random() * 2 * Math.PI;
+    const globalPhase = Math.random() * 2 * Math.PI;
+    
+    // Convert to alpha and beta
+    const alpha = {
+        re: Math.cos(theta / 2) * Math.cos(globalPhase),
+        im: Math.cos(theta / 2) * Math.sin(globalPhase)
+    };
+    
+    const beta = {
+        re: Math.sin(theta / 2) * Math.cos(phi + globalPhase),
+        im: Math.sin(theta / 2) * Math.sin(phi + globalPhase)
+    };
+    
+    const newState = [alpha, beta];
+    
+    document.getElementById('last-gate').style.display = 'block';
+    document.getElementById('last-gate-name').textContent = 'Random State';
+    
+    animateGateApplication(newState);
+    
+    // Update input fields
+    document.getElementById('alpha-re').value = alpha.re.toFixed(3);
+    document.getElementById('alpha-im').value = alpha.im.toFixed(3);
+    document.getElementById('beta-re').value = beta.re.toFixed(3);
+    document.getElementById('beta-im').value = beta.im.toFixed(3);
+    
+    document.getElementById('v0-re').value = alpha.re.toFixed(3);
+    document.getElementById('v0-im').value = alpha.im.toFixed(3);
+    document.getElementById('v1-re').value = beta.re.toFixed(3);
+    document.getElementById('v1-im').value = beta.im.toFixed(3);
+}
+
+// Measure qubit
+function measureQubit() {
+    if (isAnimating) return;
+    
+    const probs = calculateProbabilities(qubitState);
+    
+    // Perform measurement based on probabilities
+    const randomValue = Math.random();
+    const measuredState = randomValue < probs.p0 ? 0 : 1;
+    
+    // Collapse to measured state
+    let collapsedState;
+    if (measuredState === 0) {
+        collapsedState = [{ re: 1, im: 0 }, { re: 0, im: 0 }];
+    } else {
+        collapsedState = [{ re: 0, im: 0 }, { re: 1, im: 0 }];
+    }
+    
+    // Show measurement result
+    const resultDiv = document.getElementById('measurement-result');
+    resultDiv.style.display = 'block';
+    resultDiv.className = 'measurement-result result-' + measuredState;
+    resultDiv.innerHTML = `
+        <strong>Measurement Result: |${measuredState}⟩</strong><br>
+        Probability: ${(measuredState === 0 ? probs.p0 : probs.p1) * 100}%<br>
+        State collapsed to |${measuredState}⟩
+    `;
+    
+    // Animate collapse
+    animateGateApplication(collapsedState);
+    
+    // Hide result after 5 seconds
+    setTimeout(() => {
+        resultDiv.style.display = 'none';
+    }, 5000);
+}
